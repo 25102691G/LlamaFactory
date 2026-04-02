@@ -745,5 +745,28 @@
       "prompt": "content"
     },
     "folder": "python"
+  },
+  "DISC_Law_SFT_Pair_Train": {
+    "file_name": "DISC_Law_SFT_Train/DISC-Law-SFT-Pair_train.csv",
+    "columns": {
+      "prompt": "input",
+      "response": "output"
+    }
+  },
+  "DISC_Law_SFT_Triplet_Train": {
+    "file_name": "DISC_Law_SFT_Train/DISC-Law-SFT-Triplet-released-train.csv",
+    "columns": {
+      "prompt": "reference",
+      "query": "input",
+      "response": "output"
+    }
+  },
+  "DISC_Law_SFT_Triplet_Test": {
+    "file_name": "DISC_Law_SFT_Test/DISC-Law-SFT-Triplet-released-test.csv",
+    "columns": {
+      "prompt": "reference",
+      "query": "input",
+      "response": "output"
+    }
   }
 }
