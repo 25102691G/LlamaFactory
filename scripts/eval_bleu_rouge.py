@@ -24,6 +24,7 @@ try:
     import jieba  # type: ignore
     from nltk.translate.bleu_score import SmoothingFunction, sentence_bleu  # type: ignore
     from rouge_chinese import Rouge  # type: ignore
+    from bertscore import score as bertscore_score  # type: ignore
 
     jieba.setLogLevel(logging.CRITICAL)
     jieba.initialize()
@@ -54,6 +55,22 @@ def compute_metrics(sample):
         metric_result[k] = round(v["f"] * 100, 4)
 
     metric_result["bleu-4"] = round(bleu_score * 100, 4)
+
+    # Compute BERTScore
+    try:
+        bertscore_results = bertscore_score(
+            [sample["predict"]], 
+            [sample["label"]], 
+            lang="zh", 
+            verbose=False
+        )
+        metric_result["bertscore-precision"] = round(float(bertscore_results["precision"].mean()) * 100, 4)
+        metric_result["bertscore-recall"] = round(float(bertscore_results["recall"].mean()) * 100, 4)
+        metric_result["bertscore-f1"] = round(float(bertscore_results["f1"].mean()) * 100, 4)
+    except Exception:
+        metric_result["bertscore-precision"] = 0.0
+        metric_result["bertscore-recall"] = 0.0
+        metric_result["bertscore-f1"] = 0.0
 
     return metric_result
 
