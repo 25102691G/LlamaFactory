@@ -43,6 +43,11 @@ if is_nltk_available():
 if is_rouge_available():
     from rouge_chinese import Rouge  # type: ignore
 
+try:
+    from bertscore import score as bertscore_score  # type: ignore
+except ImportError:
+    bertscore_score = None
+
 
 def eval_logit_processor(logits: "torch.Tensor", labels: "torch.Tensor") -> "torch.Tensor":
     r"""Compute the token with the largest likelihood to reduce memory footprint."""
@@ -98,7 +103,7 @@ class ComputeSimilarity:
         if hasattr(self, "score_dict"):
             result = {k: float(np.mean(v)) for k, v in self.score_dict.items()}
 
-        self.score_dict = {"rouge-1": [], "rouge-2": [], "rouge-l": [], "bleu-4": []}
+        self.score_dict = {"rouge-1": [], "rouge-2": [], "rouge-l": [], "bleu-4": [], "bertscore-precision": [], "bertscore-recall": [], "bertscore-f1": []}
         return result
 
     def __post_init__(self):
@@ -129,6 +134,21 @@ class ComputeSimilarity:
 
             bleu_score = sentence_bleu([list(label)], list(pred), smoothing_function=SmoothingFunction().method3)
             self.score_dict["bleu-4"].append(round(bleu_score * 100, 4))
+
+            try:
+                bertscore_results = bertscore_score(
+                    [pred], 
+                    [label], 
+                    lang="zh", 
+                    verbose=False
+                )
+                self.score_dict["bertscore-precision"].append(round(float(bertscore_results["precision"].mean()) * 100, 4))
+                self.score_dict["bertscore-recall"].append(round(float(bertscore_results["recall"].mean()) * 100, 4))
+                self.score_dict["bertscore-f1"].append(round(float(bertscore_results["f1"].mean()) * 100, 4))
+            except Exception:
+                self.score_dict["bertscore-precision"].append(0.0)
+                self.score_dict["bertscore-recall"].append(0.0)
+                self.score_dict["bertscore-f1"].append(0.0)
 
         if compute_result:
             return self._dump()
