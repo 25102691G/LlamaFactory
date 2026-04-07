@@ -47,7 +47,7 @@ if is_rouge_available():
     from rouge_chinese import Rouge  # type: ignore
 
 try:
-    from bertscore import score as bertscore_score  # type: ignore
+    from bert_score import score as bertscore_score  # type: ignore
 except ImportError:
     bertscore_score = None
 
@@ -152,16 +152,19 @@ class ComputeSimilarity:
                 logger.debug(f"Pred (first 50 chars): {pred[:50]}")
                 logger.debug(f"Label (first 50 chars): {label[:50]}")
                 
-                bertscore_results = bertscore_score(
+                P, R, F1 = bertscore_score(
                     [pred], 
-                    [label], 
-                    lang="zh", 
+                    [label],
+                    lang="zh",
+                    num_layers=9,
+                    model_type="/home/modelscope/models/google-bert/bert-base-chinese",
+                    device="cuda" if torch.cuda.is_available() else "cup",
                     verbose=False
                 )
                 
-                precision = float(bertscore_results["precision"].mean()) * 100
-                recall = float(bertscore_results["recall"].mean()) * 100
-                f1 = float(bertscore_results["f1"].mean()) * 100
+                precision = float(P.mean()) * 100
+                recall = float(R.mean()) * 100
+                f1 = float(F1.mean()) * 100
                 
                 logger.debug(f"BERTScore raw values - Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
                 
